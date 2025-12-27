@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Image, Bold, Italic, List, Link2, Quote, Code, Send, Save } from "lucide-react";
+import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
+import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
 
 const Write = () => {
@@ -76,39 +77,10 @@ const Write = () => {
             {/* Editor */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm animate-fade-in" style={{ animationDelay: "100ms" }}>
               {/* Cover Image */}
-              <div className="relative">
-                {coverImage ? (
-                  <div className="relative h-64 bg-secondary">
-                    <img 
-                      src={coverImage} 
-                      alt="Cover" 
-                      className="w-full h-full object-cover"
-                    />
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="absolute bottom-4 right-4"
-                      onClick={() => setCoverImage("")}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="h-48 bg-gradient-to-br from-secondary to-secondary/50 flex flex-col items-center justify-center border-b border-border">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <Image className="w-6 h-6 text-primary" />
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">Add a cover image</p>
-                    <Input
-                      type="text"
-                      placeholder="Paste image URL..."
-                      className="max-w-xs h-9 text-sm"
-                      value={coverImage}
-                      onChange={(e) => setCoverImage(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
+              <CoverImageUpload 
+                coverImage={coverImage} 
+                onImageChange={setCoverImage} 
+              />
 
               {/* Title */}
               <div className="p-6 pb-0">
