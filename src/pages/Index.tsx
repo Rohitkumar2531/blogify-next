@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { ArrowRight, Sparkles, Zap, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -78,6 +79,8 @@ const Index = () => {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </div>
   );
 };

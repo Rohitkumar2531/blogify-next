@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { toast } from "sonner";
+import Footer from "@/components/Footer";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -236,6 +237,8 @@ const Signup = () => {
           </p>
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 };
