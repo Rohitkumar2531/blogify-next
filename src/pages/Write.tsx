@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ const Write = () => {
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handlePublish = () => {
     if (!title.trim() || !content.trim()) {
@@ -35,6 +36,67 @@ const Write = () => {
     });
   };
 
+  const insertFormatting = (prefix: string, suffix: string = prefix) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const newText = content.substring(0, start) + prefix + selectedText + suffix + content.substring(end);
+    
+    setContent(newText);
+    
+    // Restore focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      if (selectedText) {
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      } else {
+        textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+      }
+    }, 0);
+  };
+
+  const handleToolbarClick = (label: string) => {
+    switch (label) {
+      case "Bold":
+        insertFormatting("**");
+        break;
+      case "Italic":
+        insertFormatting("*");
+        break;
+      case "List":
+        insertFormatting("\n- ", "");
+        break;
+      case "Link":
+        const url = prompt("Enter URL:");
+        if (url) {
+          const textarea = textareaRef.current;
+          if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = content.substring(start, end) || "link text";
+            const newText = content.substring(0, start) + `[${selectedText}](${url})` + content.substring(end);
+            setContent(newText);
+          }
+        }
+        break;
+      case "Quote":
+        insertFormatting("\n> ", "");
+        break;
+      case "Code":
+        insertFormatting("`");
+        break;
+      case "Image":
+        const imageUrl = prompt("Enter image URL:");
+        if (imageUrl) {
+          insertFormatting(`\n![image](${imageUrl})\n`, "");
+        }
+        break;
+    }
+  };
+
   const toolbarButtons = [
     { icon: Bold, label: "Bold" },
     { icon: Italic, label: "Italic" },
@@ -53,7 +115,7 @@ const Write = () => {
         <section className="container mx-auto px-4 lg:px-8 py-8 lg:py-12">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
                   Create a new post
@@ -63,11 +125,12 @@ const Write = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="outline" onClick={handleSaveDraft} className="gap-2">
+                <Button variant="outline" onClick={handleSaveDraft} className="gap-2 flex-1 sm:flex-none">
                   <Save className="w-4 h-4" />
-                  Save Draft
+                  <span className="hidden xs:inline">Save Draft</span>
+                  <span className="xs:hidden">Save</span>
                 </Button>
-                <Button onClick={handlePublish} className="gap-2">
+                <Button onClick={handlePublish} className="gap-2 flex-1 sm:flex-none">
                   <Send className="w-4 h-4" />
                   Publish
                 </Button>
@@ -83,28 +146,30 @@ const Write = () => {
               />
 
               {/* Title */}
-              <div className="p-6 pb-0">
+              <div className="p-4 sm:p-6 pb-0">
                 <Input
                   type="text"
                   placeholder="Your post title..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-3xl font-bold border-0 bg-transparent px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  className="text-xl sm:text-3xl font-bold border-0 bg-transparent px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
                 />
               </div>
 
               {/* Toolbar */}
-              <div className="px-6 py-4 border-b border-border">
-                <div className="flex items-center gap-1 flex-wrap">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+                <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
                   {toolbarButtons.map((button) => {
                     const Icon = button.icon;
                     return (
                       <button
                         key={button.label}
-                        className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        onClick={() => handleToolbarClick(button.label)}
+                        className="p-2 sm:p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary active:bg-secondary/80 transition-colors touch-manipulation"
                         title={button.label}
+                        type="button"
                       >
-                        <Icon className="w-5 h-5" />
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     );
                   })}
@@ -112,18 +177,19 @@ const Write = () => {
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <Textarea
+                  ref={textareaRef}
                   placeholder="Start writing your story..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="min-h-[400px] text-lg leading-relaxed border-0 bg-transparent px-0 resize-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  className="min-h-[300px] sm:min-h-[400px] text-base sm:text-lg leading-relaxed border-0 bg-transparent px-0 resize-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
 
             {/* Tips */}
-            <div className="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-xl animate-fade-in" style={{ animationDelay: "200ms" }}>
+            <div className="mt-8 p-4 sm:p-6 bg-primary/5 border border-primary/20 rounded-xl animate-fade-in" style={{ animationDelay: "200ms" }}>
               <h3 className="font-semibold text-foreground mb-3">Writing Tips</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
