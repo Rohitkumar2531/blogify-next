@@ -1,7 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
-import { PenLine, BookOpen, LogIn, Menu, X } from "lucide-react";
+import { PenLine, BookOpen, LogIn, Menu, X, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { href: "/blogs", label: "Blogs", icon: BookOpen },
@@ -11,6 +20,7 @@ const navLinks = [
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-nav backdrop-blur-xl border-b border-nav-border animate-fade-in">
@@ -54,19 +64,54 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA / Profile */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login" className="flex items-center gap-2">
-                <LogIn className="w-4 h-4" />
-                Login
-              </Link>
-            </Button>
-            <Button variant="default" size="sm" asChild>
-              <Link to="/signup">
-                Get Started
-              </Link>
-            </Button>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 p-1 rounded-full hover:bg-secondary transition-colors">
+                    <Avatar className="w-8 h-8 border-2 border-primary/20">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {user.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="flex items-center gap-2 cursor-pointer text-destructive">
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login" className="flex items-center gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </Link>
+                </Button>
+                <Button variant="default" size="sm" asChild>
+                  <Link to="/signup">
+                    Get Started
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -110,20 +155,50 @@ export default function Navbar() {
                 );
               })}
               <div className="h-px bg-border my-2" />
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors animate-slide-in"
-                style={{ animationDelay: "100ms" }}
-              >
-                <LogIn className="w-4 h-4" />
-                Login
-              </Link>
-              <Button variant="default" className="mx-4 mt-2 animate-slide-in" style={{ animationDelay: "150ms" }} asChild>
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                  Get Started
-                </Link>
-              </Button>
+              
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors animate-slide-in"
+                    style={{ animationDelay: "100ms" }}
+                  >
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {user.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => { logout(); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors animate-slide-in"
+                    style={{ animationDelay: "150ms" }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors animate-slide-in"
+                    style={{ animationDelay: "100ms" }}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </Link>
+                  <Button variant="default" className="mx-4 mt-2 animate-slide-in" style={{ animationDelay: "150ms" }} asChild>
+                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                      Get Started
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
