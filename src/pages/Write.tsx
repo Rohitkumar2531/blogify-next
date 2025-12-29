@@ -138,53 +138,59 @@ const Write = () => {
             </div>
 
             {/* Editor */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm animate-fade-in" style={{ animationDelay: "100ms" }}>
-              {/* Cover Image */}
-              <CoverImageUpload 
-                coverImage={coverImage} 
-                onImageChange={setCoverImage} 
-              />
-
-              {/* Title */}
-              <div className="p-4 sm:p-6 pb-0">
-                <Input
-                  type="text"
-                  placeholder="Your post title..."
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-xl sm:text-3xl font-bold border-0 bg-transparent px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
+            <div className="relative group animate-fade-in" style={{ animationDelay: "100ms" }}>
+              {/* Glowing border effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-slow" />
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
+              
+              <div className="relative bg-card rounded-2xl overflow-hidden shadow-lg">
+                {/* Cover Image */}
+                <CoverImageUpload 
+                  coverImage={coverImage} 
+                  onImageChange={setCoverImage} 
                 />
-              </div>
 
-              {/* Toolbar */}
-              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-                <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
-                  {toolbarButtons.map((button) => {
-                    const Icon = button.icon;
-                    return (
-                      <button
-                        key={button.label}
-                        onClick={() => handleToolbarClick(button.label)}
-                        className="p-2 sm:p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary active:bg-secondary/80 transition-colors touch-manipulation"
-                        title={button.label}
-                        type="button"
-                      >
-                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    );
-                  })}
+                {/* Title */}
+                <div className="p-4 sm:p-6 pb-0">
+                  <Input
+                    type="text"
+                    placeholder="Your post title..."
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-xl sm:text-3xl font-bold border-0 bg-transparent px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  />
                 </div>
-              </div>
 
-              {/* Content */}
-              <div className="p-4 sm:p-6">
-                <Textarea
-                  ref={textareaRef}
-                  placeholder="Start writing your story..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="min-h-[300px] sm:min-h-[400px] text-base sm:text-lg leading-relaxed border-0 bg-transparent px-0 resize-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                />
+                {/* Toolbar */}
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50">
+                  <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
+                    {toolbarButtons.map((button) => {
+                      const Icon = button.icon;
+                      return (
+                        <button
+                          key={button.label}
+                          onClick={() => handleToolbarClick(button.label)}
+                          className="p-2 sm:p-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 active:bg-primary/20 transition-all duration-200 touch-manipulation"
+                          title={button.label}
+                          type="button"
+                        >
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-4 sm:p-6">
+                  <Textarea
+                    ref={textareaRef}
+                    placeholder="Start writing your story..."
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="min-h-[300px] sm:min-h-[400px] text-base sm:text-lg leading-relaxed border-0 bg-transparent px-0 resize-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
+                  />
+                </div>
               </div>
             </div>
 
