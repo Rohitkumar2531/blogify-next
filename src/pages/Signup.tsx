@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -16,34 +15,17 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { signup } = useAuth();
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreedToTerms) {
-      toast.error("Please agree to the terms and conditions");
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      await signup({ name, email, password });
-      toast.success("Account created successfully!");
-      navigate("/");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Signup failed");
-    } finally {
-      setIsLoading(false);
-    }
+    console.log("Signup attempt:", { name, email, password, agreedToTerms });
   };
 
   const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
-      // Placeholder for Google OAuth - implement in your backend
-      toast.info("Google signup requires backend integration.");
+      // Placeholder for Google OAuth - would require backend integration
+      toast.info("Google signup requires backend integration. Enable Lovable Cloud to add authentication.");
     } catch (error) {
       toast.error("Failed to initiate Google signup");
     } finally {
@@ -54,8 +36,8 @@ const Signup = () => {
   const handleGitHubSignup = async () => {
     setIsLoading(true);
     try {
-      // Placeholder for GitHub OAuth - implement in your backend
-      toast.info("GitHub signup requires backend integration.");
+      // Placeholder for GitHub OAuth - would require backend integration
+      toast.info("GitHub signup requires backend integration. Enable Lovable Cloud to add authentication.");
     } catch (error) {
       toast.error("Failed to initiate GitHub signup");
     } finally {
