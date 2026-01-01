@@ -105,7 +105,7 @@ const Login = () => {
           </div>
           
           <p className="text-muted-foreground text-sm">
-            © 2025 Bloggy. All rights reserved.
+            © 2025 Blogify. All rights reserved.
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ const Login = () => {
         {/* Mobile Header */}
         <header className="p-4 sm:p-6 lg:hidden">
           <Link to="/" className="text-xl sm:text-2xl font-bold text-foreground">
-            Bloggy
+            Blogify
           </Link>
         </header>
 
