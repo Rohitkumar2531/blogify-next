@@ -134,28 +134,32 @@ const Write = () => {
 
   return (
     <div className={`min-h-screen relative transition-colors duration-500 ${
-      backgroundMode === "light" ? "bg-slate-100" : "bg-background"
+      backgroundMode === "light" ? "bg-amber-50" : "bg-background"
     }`}>
       {/* Background with stationery pattern - only show for dark and light modes */}
       {backgroundMode !== "minimal" && (
         <>
           <div 
             className={`fixed inset-0 z-0 transition-opacity duration-500 ${
-              backgroundMode === "dark" ? "opacity-60" : "opacity-40"
+              backgroundMode === "dark" ? "opacity-60" : "opacity-70"
             }`}
             style={{
               backgroundImage: `url(${writeBackground})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundAttachment: 'fixed',
-              filter: backgroundMode === "light" ? "invert(1) hue-rotate(180deg)" : "none"
+              filter: backgroundMode === "light" ? "sepia(0.3) saturate(1.2) brightness(1.1)" : "none"
             }}
           />
           <div className={`fixed inset-0 z-0 transition-all duration-500 ${
             backgroundMode === "dark" 
               ? "bg-gradient-to-b from-background/40 via-background/60 to-background/80"
-              : "bg-gradient-to-b from-slate-100/60 via-slate-100/70 to-slate-100/90"
+              : "bg-gradient-to-br from-amber-50/70 via-orange-50/60 to-rose-50/70"
           }`} />
+          {/* Additional warm glow for light mode */}
+          {backgroundMode === "light" && (
+            <div className="fixed inset-0 z-0 bg-gradient-to-tr from-teal-100/20 via-transparent to-amber-100/30" />
+          )}
         </>
       )}
       
