@@ -111,7 +111,7 @@ const Write = () => {
     <div className="min-h-screen bg-background relative">
       {/* Background with stationery pattern */}
       <div 
-        className="fixed inset-0 z-0 opacity-30"
+        className="fixed inset-0 z-0 opacity-60"
         style={{
           backgroundImage: `url(${writeBackground})`,
           backgroundSize: 'cover',
@@ -119,7 +119,7 @@ const Write = () => {
           backgroundAttachment: 'fixed'
         }}
       />
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/80 via-background/90 to-background" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/40 via-background/60 to-background/80" />
       
       <Navbar />
       
