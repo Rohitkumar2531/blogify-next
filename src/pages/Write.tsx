@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image } from "lucide-react";
+import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,12 +7,37 @@ import Navbar from "@/components/Navbar";
 import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import writeBackground from "@/assets/write-background.jpg";
+
+type BackgroundMode = "dark" | "light" | "minimal";
+
 const Write = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("dark");
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const cycleBackgroundMode = () => {
+    const modes: BackgroundMode[] = ["dark", "light", "minimal"];
+    const currentIndex = modes.indexOf(backgroundMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setBackgroundMode(modes[nextIndex]);
+    toast({
+      title: `${modes[nextIndex].charAt(0).toUpperCase() + modes[nextIndex].slice(1)} Mode`,
+      description: `Switched to ${modes[nextIndex]} background`,
+    });
+  };
+
+  const getBackgroundModeIcon = () => {
+    switch (backgroundMode) {
+      case "dark": return Moon;
+      case "light": return Sun;
+      case "minimal": return Minimize2;
+    }
+  };
+
+  const BackgroundIcon = getBackgroundModeIcon();
 
   const handlePublish = () => {
     if (!title.trim() || !content.trim()) {
@@ -108,18 +133,36 @@ const Write = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Background with stationery pattern */}
-      <div 
-        className="fixed inset-0 z-0 opacity-60"
-        style={{
-          backgroundImage: `url(${writeBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/40 via-background/60 to-background/80" />
+    <div className={`min-h-screen relative transition-colors duration-500 ${
+      backgroundMode === "light" ? "bg-slate-100" : "bg-background"
+    }`}>
+      {/* Background with stationery pattern - only show for dark and light modes */}
+      {backgroundMode !== "minimal" && (
+        <>
+          <div 
+            className={`fixed inset-0 z-0 transition-opacity duration-500 ${
+              backgroundMode === "dark" ? "opacity-60" : "opacity-40"
+            }`}
+            style={{
+              backgroundImage: `url(${writeBackground})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundAttachment: 'fixed',
+              filter: backgroundMode === "light" ? "invert(1) hue-rotate(180deg)" : "none"
+            }}
+          />
+          <div className={`fixed inset-0 z-0 transition-all duration-500 ${
+            backgroundMode === "dark" 
+              ? "bg-gradient-to-b from-background/40 via-background/60 to-background/80"
+              : "bg-gradient-to-b from-slate-100/60 via-slate-100/70 to-slate-100/90"
+          }`} />
+        </>
+      )}
+      
+      {/* Minimal mode solid background */}
+      {backgroundMode === "minimal" && (
+        <div className="fixed inset-0 z-0 bg-background" />
+      )}
       
       <Navbar />
       
@@ -136,7 +179,16 @@ const Write = () => {
                   Share your thoughts with the world
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={cycleBackgroundMode} 
+                  className="shrink-0"
+                  title={`Current: ${backgroundMode} mode (click to change)`}
+                >
+                  <BackgroundIcon className="w-4 h-4" />
+                </Button>
                 <Button variant="outline" onClick={handleSaveDraft} className="gap-2 flex-1 sm:flex-none">
                   <Save className="w-4 h-4" />
                   <span className="hidden xs:inline">Save Draft</span>
