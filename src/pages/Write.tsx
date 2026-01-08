@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
 import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
-
+import writeBackground from "@/assets/write-background.jpg";
 const Write = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -108,10 +108,22 @@ const Write = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Background with stationery pattern */}
+      <div 
+        className="fixed inset-0 z-0 opacity-30"
+        style={{
+          backgroundImage: `url(${writeBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/80 via-background/90 to-background" />
+      
       <Navbar />
       
-      <main className="pt-16">
+      <main className="pt-16 relative z-10">
         <section className="container mx-auto px-4 lg:px-8 py-8 lg:py-12">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
