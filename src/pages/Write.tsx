@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2 } from "lucide-react";
+import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
 import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
@@ -10,11 +11,28 @@ import writeBackground from "@/assets/write-background.jpg";
 
 type BackgroundMode = "dark" | "light" | "minimal";
 
+interface ColorPreset {
+  name: string;
+  bg: string;
+  gradient: string;
+  accent: string;
+}
+
+const colorPresets: ColorPreset[] = [
+  { name: "Warm Amber", bg: "bg-amber-50", gradient: "from-amber-50/70 via-orange-50/60 to-rose-50/70", accent: "from-teal-100/20 via-transparent to-amber-100/30" },
+  { name: "Ocean Blue", bg: "bg-sky-50", gradient: "from-sky-50/70 via-blue-50/60 to-indigo-50/70", accent: "from-cyan-100/20 via-transparent to-blue-100/30" },
+  { name: "Forest Green", bg: "bg-emerald-50", gradient: "from-emerald-50/70 via-green-50/60 to-teal-50/70", accent: "from-lime-100/20 via-transparent to-emerald-100/30" },
+  { name: "Rose Pink", bg: "bg-rose-50", gradient: "from-rose-50/70 via-pink-50/60 to-fuchsia-50/70", accent: "from-pink-100/20 via-transparent to-rose-100/30" },
+  { name: "Lavender", bg: "bg-violet-50", gradient: "from-violet-50/70 via-purple-50/60 to-indigo-50/70", accent: "from-purple-100/20 via-transparent to-violet-100/30" },
+  { name: "Sunset", bg: "bg-orange-50", gradient: "from-orange-50/70 via-red-50/60 to-yellow-50/70", accent: "from-amber-100/20 via-transparent to-orange-100/30" },
+];
+
 const Write = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("dark");
+  const [selectedColor, setSelectedColor] = useState<ColorPreset>(colorPresets[0]);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -134,7 +152,7 @@ const Write = () => {
 
   return (
     <div className={`min-h-screen relative transition-colors duration-500 ${
-      backgroundMode === "light" ? "bg-amber-50" : "bg-background"
+      backgroundMode === "light" ? selectedColor.bg : "bg-background"
     }`}>
       {/* Background with stationery pattern - only show for dark and light modes */}
       {backgroundMode !== "minimal" && (
@@ -154,11 +172,11 @@ const Write = () => {
           <div className={`fixed inset-0 z-0 transition-all duration-500 ${
             backgroundMode === "dark" 
               ? "bg-gradient-to-b from-background/40 via-background/60 to-background/80"
-              : "bg-gradient-to-br from-amber-50/70 via-orange-50/60 to-rose-50/70"
+              : `bg-gradient-to-br ${selectedColor.gradient}`
           }`} />
-          {/* Additional warm glow for light mode */}
+          {/* Additional glow for light mode */}
           {backgroundMode === "light" && (
-            <div className="fixed inset-0 z-0 bg-gradient-to-tr from-teal-100/20 via-transparent to-amber-100/30" />
+            <div className={`fixed inset-0 z-0 bg-gradient-to-tr ${selectedColor.accent}`} />
           )}
         </>
       )}
@@ -184,15 +202,71 @@ const Write = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={cycleBackgroundMode} 
-                  className="shrink-0"
-                  title={`Current: ${backgroundMode} mode (click to change)`}
-                >
-                  <BackgroundIcon className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={cycleBackgroundMode} 
+                    className="shrink-0 rounded-r-none border-r-0"
+                    title={`Current: ${backgroundMode} mode (click to change)`}
+                  >
+                    <BackgroundIcon className="w-4 h-4" />
+                  </Button>
+                  {backgroundMode === "light" && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="shrink-0 rounded-l-none"
+                          title="Choose background color"
+                        >
+                          <Palette className="w-4 h-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-3" align="end">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm text-foreground">Background Tint</h4>
+                          <div className="grid grid-cols-3 gap-2">
+                            {colorPresets.map((preset) => (
+                              <button
+                                key={preset.name}
+                                onClick={() => {
+                                  setSelectedColor(preset);
+                                  toast({
+                                    title: preset.name,
+                                    description: "Background tint applied",
+                                  });
+                                }}
+                                className={`group relative h-12 rounded-lg transition-all duration-200 hover:scale-105 ${preset.bg} ${
+                                  selectedColor.name === preset.name 
+                                    ? "ring-2 ring-primary ring-offset-2" 
+                                    : "ring-1 ring-border hover:ring-primary/50"
+                                }`}
+                                title={preset.name}
+                              >
+                                <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${preset.gradient} opacity-80`} />
+                                {selectedColor.name === preset.name && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground text-center">
+                            {selectedColor.name}
+                          </p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  {backgroundMode !== "light" && (
+                    <div className="w-10 h-10 border border-border rounded-r-lg bg-muted/30 flex items-center justify-center opacity-50">
+                      <Palette className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
                 <Button variant="outline" onClick={handleSaveDraft} className="gap-2 flex-1 sm:flex-none">
                   <Save className="w-4 h-4" />
                   <span className="hidden xs:inline">Save Draft</span>
