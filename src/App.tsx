@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import Write from "./pages/Write";
 import Blogs from "./pages/Blogs";
 import Profile from "./pages/Profile";
+import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/write" element={<Write />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/blog/:id" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

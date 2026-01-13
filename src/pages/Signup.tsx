@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, PenLine, BookOpen, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import authBackground from "@/assets/auth-background.jpg";
 
 const Signup = () => {
@@ -15,10 +16,21 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signup } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup attempt:", { name, email, password, agreedToTerms });
+    setIsLoading(true);
+    try {
+      await signup(name, email, password);
+      toast.success("Account created successfully!");
+      navigate('/');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create account. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignup = async () => {
