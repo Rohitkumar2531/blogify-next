@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, MapPin, Link as LinkIcon, Mail, Edit2, Save, X } from 'lucide-react';
+import {UserPostList} from '@/components/UserPostList';
+import { useQuery } from '@tanstack/react-query';
+
+interface Blog {
+  _id: string;
+  title: string;
+  content: string;
+  coverImage: string;
+  author: {
+    name: string;
+  };
+  createdAt: string;
+}
 
 const Profile = () => {
   const { user, isAuthenticated, updateProfile } = useAuth();
@@ -24,6 +37,20 @@ const Profile = () => {
     bio: user?.bio || '',
     location: user?.location || '',
     website: user?.website || '',
+    avatar: user?.avatar || '',
+  });
+
+  const { data: drafts, isLoading: draftsLoading, error: draftsError } = useQuery<{ blogs: Blog[] }>({
+    queryKey: ['drafts', user?._id],
+    queryFn: () => {
+      const token = localStorage.getItem('token');
+      return fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/blogs/drafts?author=${user?._id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(res => res.json());
+    },
+    enabled: !!user,
   });
 
   if (!isAuthenticated || !user) {
@@ -40,12 +67,22 @@ const Profile = () => {
   }
 
   const handleSave = () => {
-    updateProfile(formData);
-    setIsEditing(false);
-    toast({
-      title: "Profile updated",
-      description: "Your changes have been saved successfully.",
-    });
+    (async () => {
+      try {
+        await updateProfile(formData);
+        setIsEditing(false);
+        toast({
+          title: "Profile updated",
+          description: "Your changes have been saved successfully.",
+        });
+      } catch (err: any) {
+        toast({
+          title: "Update failed",
+          description: err?.message || 'Failed to update profile',
+          variant: 'destructive',
+        });
+      }
+    })();
   };
 
   const handleCancel = () => {
@@ -55,6 +92,7 @@ const Profile = () => {
       bio: user.bio || '',
       location: user.location || '',
       website: user.website || '',
+      avatar: user.avatar || '',
     });
     setIsEditing(false);
   };
@@ -75,15 +113,32 @@ const Profile = () => {
           <div className="absolute -bottom-12 left-4 md:left-8">
             <div className="relative group">
               <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background shadow-xl">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={isEditing ? formData.avatar || user.avatar : user.avatar} alt={isEditing ? formData.name || user.name : user.name} />
                 <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {(isEditing ? (formData.name || user.name) : user.name).split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <button className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-6 h-6 text-white" />
-                </button>
+                <>
+                  <input
+                    id="avatarInput"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files && e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setFormData(prev => ({ ...prev, avatar: reader.result as string }));
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <button onClick={() => document.getElementById('avatarInput')?.click()} className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera className="w-6 h-6 text-white" />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -208,19 +263,35 @@ const Profile = () => {
               
               <TabsContent value="posts">
                 <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <p>No posts yet. Start writing your first story!</p>
-                    <Button className="mt-4" onClick={() => navigate('/write')}>
-                      Write a Post
-                    </Button>
+                  <CardContent className="p-6">
+                    <UserPostList userId={user._id} status="published" />
                   </CardContent>
                 </Card>
               </TabsContent>
               
               <TabsContent value="drafts">
                 <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <p>No drafts saved.</p>
+                  <CardContent className="p-6">
+                    {draftsLoading ? (
+                      <p>Loading drafts...</p>
+                    ) : draftsError ? (
+                      <p className="text-destructive">Error loading drafts.</p>
+                    ) : drafts && drafts.blogs.length > 0 ? (
+                      <div className="space-y-4">
+                        {drafts.blogs.map((draft) => (
+                          <div key={draft._id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                            <Link to={`/write?draftId=${draft._id}`}>
+                              <h3 className="font-semibold">{draft.title}</h3>
+                              <p className="text-sm text-muted-foreground truncate">{draft.content}</p>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center text-muted-foreground">
+                        <p>No drafts saved.</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -241,5 +312,4 @@ const Profile = () => {
     </div>
   );
 };
-
 export default Profile;

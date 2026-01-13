@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
 import writeBackground from "@/assets/write-background.jpg";
+import { useAuth } from "@/contexts/AuthContext";
 
 type BackgroundMode = "dark" | "light" | "minimal";
 
@@ -28,6 +31,8 @@ const colorPresets: ColorPreset[] = [
 ];
 
 const Write = () => {
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draftId');
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
@@ -35,6 +40,78 @@ const Write = () => {
   const [selectedColor, setSelectedColor] = useState<ColorPreset>(colorPresets[0]);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const { data: draftData, isLoading: isDraftLoading } = useQuery({
+    queryKey: ['blog', draftId],
+    queryFn: () => {
+      const token = localStorage.getItem('token');
+      return fetch(`${import.meta.env.VITE_BACKEND_URL}/api/v1/blogs/${draftId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(res => res.json());
+    },
+    enabled: !!draftId,
+  });
+
+  useEffect(() => {
+    if (draftData) {
+      setTitle(draftData.blog.title);
+      setContent(draftData.blog.content);
+      setCoverImage(draftData.blog.coverImage);
+    }
+  }, [draftData]);
+  
+  const mutation = useMutation({
+    mutationFn: (newBlog: { title: string; content: string; coverImage: string, status: string }) => {
+      const token = localStorage.getItem('token');
+      const method = draftId ? 'PATCH' : 'POST';
+      const url = draftId
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/v1/blogs/${draftId}`
+        : `${import.meta.env.VITE_BACKEND_URL}/api/v1/blogs`;
+
+      return fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newBlog),
+      }).then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to publish post');
+        }
+        return res.json();
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+      queryClient.invalidateQueries({ queryKey: ['drafts'] });
+      if (data.blog.status === 'published') {
+        toast({
+          title: "Post published!",
+          description: "Your blog post has been published successfully.",
+        });
+        navigate(`/blog/${data.blog._id}`);
+      } else {
+        toast({
+          title: "Draft saved!",
+          description: "Your draft has been saved successfully.",
+        });
+        navigate('/profile');
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to publish post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
 
   const cycleBackgroundMode = () => {
     const modes: BackgroundMode[] = ["dark", "light", "minimal"];
@@ -58,6 +135,14 @@ const Write = () => {
   const BackgroundIcon = getBackgroundModeIcon();
 
   const handlePublish = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to publish a post.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!title.trim() || !content.trim()) {
       toast({
         title: "Missing content",
@@ -66,17 +151,27 @@ const Write = () => {
       });
       return;
     }
-    toast({
-      title: "Post published!",
-      description: "Your blog post has been published successfully.",
-    });
+    mutation.mutate({ title, content, coverImage, status: 'published' });
   };
 
   const handleSaveDraft = () => {
-    toast({
-      title: "Draft saved",
-      description: "Your draft has been saved.",
-    });
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to save a draft.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!title.trim() || !content.trim()) {
+      toast({
+        title: "Missing content",
+        description: "Please add a title and content to your draft.",
+        variant: "destructive",
+      });
+      return;
+    }
+    mutation.mutate({ title, content, coverImage, status: 'draft' });
   };
 
   const insertFormatting = (prefix: string, suffix: string = prefix) => {
@@ -272,9 +367,8 @@ const Write = () => {
                   <span className="hidden xs:inline">Save Draft</span>
                   <span className="xs:hidden">Save</span>
                 </Button>
-                <Button onClick={handlePublish} className="gap-2 flex-1 sm:flex-none">
-                  <Send className="w-4 h-4" />
-                  Publish
+                <Button onClick={handlePublish} disabled={mutation.isPending} className="gap-2 flex-1 sm:flex-none">
+                  {mutation.isPending ? 'Publishing...' : <><Send className="w-4 h-4" /> Publish</>}
                 </Button>
               </div>
             </div>
