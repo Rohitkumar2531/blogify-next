@@ -70,7 +70,7 @@ const Signup = () => {
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <Link to="/" className="text-2xl font-bold text-foreground">
-            Bloggy
+            Blogify
           </Link>
           
           <div className="space-y-8">
@@ -108,7 +108,7 @@ const Signup = () => {
           </div>
           
           <p className="text-muted-foreground text-sm">
-            © 2025 Bloggy. All rights reserved.
+            © 2025 Blogify. All rights reserved.
           </p>
         </div>
       </div>
@@ -118,7 +118,7 @@ const Signup = () => {
         {/* Mobile Header */}
         <header className="p-4 sm:p-6 lg:hidden">
           <Link to="/" className="text-xl sm:text-2xl font-bold text-foreground">
-            Bloggy
+            Blogify
           </Link>
         </header>
 
