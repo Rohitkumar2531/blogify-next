@@ -24,8 +24,11 @@ interface CommentsSectionProps {
 
 const CommentsSection: React.FC<CommentsSectionProps> = ({ blogId }) => {
   const [newComment, setNewComment] = useState('');
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  // Get token from localStorage since AuthContext doesn't expose it
+  const token = localStorage.getItem('token');
 
   const { data: comments, isLoading, isError } = useQuery<Comment[]>({
     queryKey: ['blogComments', blogId],

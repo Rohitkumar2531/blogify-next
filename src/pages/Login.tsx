@@ -67,7 +67,7 @@ const Login = () => {
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <Link to="/" className="text-2xl font-bold text-foreground">
-            Bloggy
+            Blogify
           </Link>
           
           <div className="space-y-8">
