@@ -19,6 +19,7 @@ interface ColorPreset {
   bg: string;
   gradient: string;
   accent: string;
+  customHex?: string;
 }
 
 const colorPresets: ColorPreset[] = [
@@ -38,6 +39,7 @@ const Write = () => {
   const [coverImage, setCoverImage] = useState("");
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("dark");
   const [selectedColor, setSelectedColor] = useState<ColorPreset>(colorPresets[0]);
+  const [customHex, setCustomHex] = useState("#f5e6d3");
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isAuthenticated } = useAuth();
@@ -245,10 +247,21 @@ const Write = () => {
     { icon: Image, label: "Image" },
   ];
 
+  const getBackgroundStyle = () => {
+    if (backgroundMode !== "light") return {};
+    if (selectedColor.customHex) {
+      return { backgroundColor: selectedColor.customHex };
+    }
+    return {};
+  };
+
   return (
-    <div className={`min-h-screen relative transition-colors duration-500 ${
-      backgroundMode === "light" ? selectedColor.bg : "bg-background"
-    }`}>
+    <div 
+      className={`min-h-screen relative transition-colors duration-500 ${
+        backgroundMode === "light" && !selectedColor.customHex ? selectedColor.bg : ""
+      } ${backgroundMode !== "light" ? "bg-background" : ""}`}
+      style={getBackgroundStyle()}
+    >
       {/* Background with stationery pattern - only show for dark and light modes */}
       {backgroundMode !== "minimal" && (
         <>
@@ -319,9 +332,11 @@ const Write = () => {
                           <Palette className="w-4 h-4" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-64 p-3" align="end">
-                        <div className="space-y-3">
+                      <PopoverContent className="w-72 p-4" align="end">
+                        <div className="space-y-4">
                           <h4 className="font-medium text-sm text-foreground">Background Tint</h4>
+                          
+                          {/* Preset Colors */}
                           <div className="grid grid-cols-3 gap-2">
                             {colorPresets.map((preset) => (
                               <button
@@ -334,14 +349,14 @@ const Write = () => {
                                   });
                                 }}
                                 className={`group relative h-12 rounded-lg transition-all duration-200 hover:scale-105 ${preset.bg} ${
-                                  selectedColor.name === preset.name 
+                                  selectedColor.name === preset.name && !selectedColor.customHex
                                     ? "ring-2 ring-primary ring-offset-2" 
                                     : "ring-1 ring-border hover:ring-primary/50"
                                 }`}
                                 title={preset.name}
                               >
                                 <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${preset.gradient} opacity-80`} />
-                                {selectedColor.name === preset.name && (
+                                {selectedColor.name === preset.name && !selectedColor.customHex && (
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-2 h-2 rounded-full bg-primary" />
                                   </div>
@@ -349,8 +364,75 @@ const Write = () => {
                               </button>
                             ))}
                           </div>
+                          
+                          {/* Divider */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-px bg-border" />
+                            <span className="text-xs text-muted-foreground">or</span>
+                            <div className="flex-1 h-px bg-border" />
+                          </div>
+                          
+                          {/* Custom Hex Input */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-muted-foreground">Custom Color</label>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <input
+                                  type="color"
+                                  value={customHex}
+                                  onChange={(e) => setCustomHex(e.target.value)}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div 
+                                  className="h-10 rounded-lg border border-border cursor-pointer transition-all hover:scale-[1.02]"
+                                  style={{ backgroundColor: customHex }}
+                                />
+                              </div>
+                              <Input
+                                type="text"
+                                value={customHex}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === "") {
+                                    setCustomHex(value || "#");
+                                  }
+                                }}
+                                placeholder="#RRGGBB"
+                                className="w-24 h-10 text-sm font-mono uppercase"
+                                maxLength={7}
+                              />
+                              <Button
+                                size="sm"
+                                className="h-10 px-3"
+                                onClick={() => {
+                                  if (/^#[0-9A-Fa-f]{6}$/.test(customHex)) {
+                                    setSelectedColor({
+                                      name: "Custom",
+                                      bg: "",
+                                      gradient: "from-white/40 via-white/30 to-white/40",
+                                      accent: "from-white/20 via-transparent to-white/30",
+                                      customHex: customHex,
+                                    });
+                                    toast({
+                                      title: "Custom Color",
+                                      description: `Applied ${customHex}`,
+                                    });
+                                  } else {
+                                    toast({
+                                      title: "Invalid color",
+                                      description: "Please enter a valid hex color (e.g. #FF5733)",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              >
+                                Apply
+                              </Button>
+                            </div>
+                          </div>
+                          
                           <p className="text-xs text-muted-foreground text-center">
-                            {selectedColor.name}
+                            {selectedColor.customHex ? `Custom: ${selectedColor.customHex}` : selectedColor.name}
                           </p>
                         </div>
                       </PopoverContent>
