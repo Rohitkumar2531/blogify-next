@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2, Palette } from "lucide-react";
+import { Bold, Italic, List, Link2, Quote, Code, Send, Save, Image, Moon, Sun, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
 import CoverImageUpload from "@/components/CoverImageUpload";
 import { useToast } from "@/hooks/use-toast";
@@ -14,22 +13,6 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type BackgroundMode = "dark" | "light" | "minimal";
 
-interface ColorPreset {
-  name: string;
-  bg: string;
-  gradient: string;
-  accent: string;
-  customHex?: string;
-}
-
-const colorPresets: ColorPreset[] = [
-  { name: "Cream Canvas", bg: "bg-amber-100", gradient: "from-amber-100/80 via-orange-100/70 to-yellow-50/80", accent: "from-orange-200/40 via-transparent to-amber-200/50" },
-  { name: "Ocean Breeze", bg: "bg-cyan-100", gradient: "from-cyan-100/80 via-sky-100/70 to-blue-100/80", accent: "from-teal-200/40 via-transparent to-cyan-200/50" },
-  { name: "Mint Fresh", bg: "bg-emerald-100", gradient: "from-emerald-100/80 via-teal-100/70 to-green-50/80", accent: "from-green-200/40 via-transparent to-emerald-200/50" },
-  { name: "Blush Pink", bg: "bg-pink-100", gradient: "from-pink-100/80 via-rose-100/70 to-fuchsia-50/80", accent: "from-rose-200/40 via-transparent to-pink-200/50" },
-  { name: "Soft Lavender", bg: "bg-violet-100", gradient: "from-violet-100/80 via-purple-100/70 to-indigo-100/80", accent: "from-purple-200/40 via-transparent to-violet-200/50" },
-  { name: "Golden Hour", bg: "bg-orange-100", gradient: "from-orange-100/80 via-amber-100/70 to-yellow-100/80", accent: "from-yellow-200/40 via-transparent to-orange-200/50" },
-];
 
 const Write = () => {
   const [searchParams] = useSearchParams();
@@ -38,8 +21,6 @@ const Write = () => {
   const [content, setContent] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("dark");
-  const [selectedColor, setSelectedColor] = useState<ColorPreset>(colorPresets[0]);
-  const [customHex, setCustomHex] = useState("#f5e6d3");
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isAuthenticated } = useAuth();
@@ -247,21 +228,10 @@ const Write = () => {
     { icon: Image, label: "Image" },
   ];
 
-  const getBackgroundStyle = () => {
-    if (backgroundMode !== "light") return {};
-    if (selectedColor.customHex) {
-      return { backgroundColor: selectedColor.customHex };
-    }
-    return {};
-  };
-
   return (
-    <div 
-      className={`min-h-screen relative transition-colors duration-500 ${
-        backgroundMode === "light" && !selectedColor.customHex ? selectedColor.bg : ""
-      } ${backgroundMode !== "light" ? "bg-background" : ""}`}
-      style={getBackgroundStyle()}
-    >
+    <div className={`min-h-screen relative transition-colors duration-500 ${
+      backgroundMode === "light" ? "bg-amber-50" : "bg-background"
+    }`}>
       {/* Background with stationery pattern - only show for dark and light modes */}
       {backgroundMode !== "minimal" && (
         <>
@@ -280,12 +250,8 @@ const Write = () => {
           <div className={`fixed inset-0 z-0 transition-all duration-500 ${
             backgroundMode === "dark" 
               ? "bg-gradient-to-b from-background/40 via-background/60 to-background/80"
-              : `bg-gradient-to-br ${selectedColor.gradient}`
+              : "bg-gradient-to-br from-amber-50/80 via-orange-50/70 to-yellow-50/80"
           }`} />
-          {/* Additional glow for light mode */}
-          {backgroundMode === "light" && (
-            <div className={`fixed inset-0 z-0 bg-gradient-to-tr ${selectedColor.accent}`} />
-          )}
         </>
       )}
       
@@ -310,140 +276,15 @@ const Write = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={cycleBackgroundMode} 
-                    className="shrink-0 rounded-r-none border-r-0"
-                    title={`Current: ${backgroundMode} mode (click to change)`}
-                  >
-                    <BackgroundIcon className="w-4 h-4" />
-                  </Button>
-                  {backgroundMode === "light" && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="shrink-0 rounded-l-none"
-                          title="Choose background color"
-                        >
-                          <Palette className="w-4 h-4" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 p-4" align="end">
-                        <div className="space-y-4">
-                          <h4 className="font-medium text-sm text-foreground">Background Tint</h4>
-                          
-                          {/* Preset Colors */}
-                          <div className="grid grid-cols-3 gap-2">
-                            {colorPresets.map((preset) => (
-                              <button
-                                key={preset.name}
-                                onClick={() => {
-                                  setSelectedColor(preset);
-                                  toast({
-                                    title: preset.name,
-                                    description: "Background tint applied",
-                                  });
-                                }}
-                                className={`group relative h-12 rounded-lg transition-all duration-200 hover:scale-105 ${preset.bg} ${
-                                  selectedColor.name === preset.name && !selectedColor.customHex
-                                    ? "ring-2 ring-primary ring-offset-2" 
-                                    : "ring-1 ring-border hover:ring-primary/50"
-                                }`}
-                                title={preset.name}
-                              >
-                                <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${preset.gradient} opacity-80`} />
-                                {selectedColor.name === preset.name && !selectedColor.customHex && (
-                                  <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-primary" />
-                                  </div>
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                          
-                          {/* Divider */}
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-px bg-border" />
-                            <span className="text-xs text-muted-foreground">or</span>
-                            <div className="flex-1 h-px bg-border" />
-                          </div>
-                          
-                          {/* Custom Hex Input */}
-                          <div className="space-y-2">
-                            <label className="text-xs font-medium text-muted-foreground">Custom Color</label>
-                            <div className="flex gap-2">
-                              <div className="relative flex-1">
-                                <input
-                                  type="color"
-                                  value={customHex}
-                                  onChange={(e) => setCustomHex(e.target.value)}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <div 
-                                  className="h-10 rounded-lg border border-border cursor-pointer transition-all hover:scale-[1.02]"
-                                  style={{ backgroundColor: customHex }}
-                                />
-                              </div>
-                              <Input
-                                type="text"
-                                value={customHex}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (/^#[0-9A-Fa-f]{0,6}$/.test(value) || value === "") {
-                                    setCustomHex(value || "#");
-                                  }
-                                }}
-                                placeholder="#RRGGBB"
-                                className="w-24 h-10 text-sm font-mono uppercase"
-                                maxLength={7}
-                              />
-                              <Button
-                                size="sm"
-                                className="h-10 px-3"
-                                onClick={() => {
-                                  if (/^#[0-9A-Fa-f]{6}$/.test(customHex)) {
-                                    setSelectedColor({
-                                      name: "Custom",
-                                      bg: "",
-                                      gradient: "from-white/40 via-white/30 to-white/40",
-                                      accent: "from-white/20 via-transparent to-white/30",
-                                      customHex: customHex,
-                                    });
-                                    toast({
-                                      title: "Custom Color",
-                                      description: `Applied ${customHex}`,
-                                    });
-                                  } else {
-                                    toast({
-                                      title: "Invalid color",
-                                      description: "Please enter a valid hex color (e.g. #FF5733)",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }}
-                              >
-                                Apply
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <p className="text-xs text-muted-foreground text-center">
-                            {selectedColor.customHex ? `Custom: ${selectedColor.customHex}` : selectedColor.name}
-                          </p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  {backgroundMode !== "light" && (
-                    <div className="w-10 h-10 border border-border rounded-r-lg bg-muted/30 flex items-center justify-center opacity-50">
-                      <Palette className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={cycleBackgroundMode} 
+                  className="shrink-0"
+                  title={`Current: ${backgroundMode} mode (click to change)`}
+                >
+                  <BackgroundIcon className="w-4 h-4" />
+                </Button>
                 <Button variant="outline" onClick={handleSaveDraft} className="gap-2 flex-1 sm:flex-none">
                   <Save className="w-4 h-4" />
                   <span className="hidden xs:inline">Save Draft</span>
