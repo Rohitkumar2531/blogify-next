@@ -22,12 +22,12 @@ interface ColorPreset {
 }
 
 const colorPresets: ColorPreset[] = [
-  { name: "Warm Amber", bg: "bg-amber-50", gradient: "from-amber-50/70 via-orange-50/60 to-rose-50/70", accent: "from-teal-100/20 via-transparent to-amber-100/30" },
-  { name: "Ocean Blue", bg: "bg-sky-50", gradient: "from-sky-50/70 via-blue-50/60 to-indigo-50/70", accent: "from-cyan-100/20 via-transparent to-blue-100/30" },
-  { name: "Forest Green", bg: "bg-emerald-50", gradient: "from-emerald-50/70 via-green-50/60 to-teal-50/70", accent: "from-lime-100/20 via-transparent to-emerald-100/30" },
-  { name: "Rose Pink", bg: "bg-rose-50", gradient: "from-rose-50/70 via-pink-50/60 to-fuchsia-50/70", accent: "from-pink-100/20 via-transparent to-rose-100/30" },
-  { name: "Lavender", bg: "bg-violet-50", gradient: "from-violet-50/70 via-purple-50/60 to-indigo-50/70", accent: "from-purple-100/20 via-transparent to-violet-100/30" },
-  { name: "Sunset", bg: "bg-orange-50", gradient: "from-orange-50/70 via-red-50/60 to-yellow-50/70", accent: "from-amber-100/20 via-transparent to-orange-100/30" },
+  { name: "Cream Canvas", bg: "bg-amber-100", gradient: "from-amber-100/80 via-orange-100/70 to-yellow-50/80", accent: "from-orange-200/40 via-transparent to-amber-200/50" },
+  { name: "Ocean Breeze", bg: "bg-cyan-100", gradient: "from-cyan-100/80 via-sky-100/70 to-blue-100/80", accent: "from-teal-200/40 via-transparent to-cyan-200/50" },
+  { name: "Mint Fresh", bg: "bg-emerald-100", gradient: "from-emerald-100/80 via-teal-100/70 to-green-50/80", accent: "from-green-200/40 via-transparent to-emerald-200/50" },
+  { name: "Blush Pink", bg: "bg-pink-100", gradient: "from-pink-100/80 via-rose-100/70 to-fuchsia-50/80", accent: "from-rose-200/40 via-transparent to-pink-200/50" },
+  { name: "Soft Lavender", bg: "bg-violet-100", gradient: "from-violet-100/80 via-purple-100/70 to-indigo-100/80", accent: "from-purple-200/40 via-transparent to-violet-200/50" },
+  { name: "Golden Hour", bg: "bg-orange-100", gradient: "from-orange-100/80 via-amber-100/70 to-yellow-100/80", accent: "from-yellow-200/40 via-transparent to-orange-200/50" },
 ];
 
 const Write = () => {
