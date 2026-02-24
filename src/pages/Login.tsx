@@ -33,7 +33,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      toast.info("Google login requires backend integration. Enable Lovable Cloud to add authentication.");
+      toast.info("Google login requires backend integration.");
     } catch (error) {
       toast.error("Failed to initiate Google login");
     } finally {
@@ -105,7 +105,7 @@ const Login = () => {
           </div>
           
           <p className="text-muted-foreground text-sm">
-            © 2025 Blogify. All rights reserved.
+            © 2026 Blogify. All rights reserved.
           </p>
         </div>
       </div>
