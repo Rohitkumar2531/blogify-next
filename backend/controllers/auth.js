@@ -4,7 +4,7 @@ const { StatusCodes } = require('http-status-codes');
 const register = async (req, res) => {
   const user = await User.create({ ...req.body });
   const token = user.createJWT();
-  res.status(StatusCodes.CREATED).json({ user: { _id: user._id, name: user.name, email: user.email }, token });
+  res.status(StatusCodes.CREATED).json({ user: { _id: user._id, name: user.name, email: user.email, avatar: user.avatar }, token });
 };
 
 const login = async (req, res) => {
@@ -23,7 +23,7 @@ const login = async (req, res) => {
   }
   // compare password
   const token = user.createJWT();
-  res.status(StatusCodes.OK).json({ user: { _id: user._id, name: user.name, email: user.email }, token });
+  res.status(StatusCodes.OK).json({ user: { _id: user._id, name: user.name, email: user.email, avatar: user.avatar }, token });
 };
 
 const getMe = async (req, res) => {

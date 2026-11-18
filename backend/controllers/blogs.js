@@ -71,7 +71,7 @@ const getBlogComments = async (req, res) => {
     params: { id: blogId },
   } = req;
 
-  const blog = await Blog.findById(blogId).populate('comments.user', 'name');
+  const blog = await Blog.findById(blogId).populate('comments.user', 'name avatar');
 
   if (!blog) {
     throw new Error(`No blog with id ${blogId}`);
@@ -113,7 +113,7 @@ const getAllBlogs = async (req, res) => {
     queryObject.author = author;
   }
   console.log('QueryObject for getAllBlogs:', queryObject); // Add this line
-  const blogs = await Blog.find(queryObject).populate('author', 'name').sort('-createdAt');
+  const blogs = await Blog.find(queryObject).populate('author', 'name avatar').sort('-createdAt');
   res.status(StatusCodes.OK).json({ blogs, count: blogs.length });
 };
 
@@ -124,7 +124,7 @@ const getBlog = async (req, res) => {
 
   const blog = await Blog.findOne({
     _id: blogId,
-  }).populate('author', 'name');
+  }).populate('author', 'name avatar');
   if (!blog) {
     throw new Error(`No blog with id ${blogId}`);
   }
@@ -146,7 +146,7 @@ const getAllDrafts = async (req, res) => {
   if (author) {
     queryObject.author = author;
   }
-  const blogs = await Blog.find(queryObject).populate('author', 'name').sort('-createdAt');
+  const blogs = await Blog.find(queryObject).populate('author', 'name avatar').sort('-createdAt');
   res.status(StatusCodes.OK).json({ blogs, count: blogs.length });
 }
 
@@ -185,14 +185,21 @@ const deleteBlog = async (req, res) => {
     params: { id: blogId },
   } = req;
 
-  const blog = await Blog.findByIdAndRemove({
+  const blog = await Blog.findOneAndDelete({
     _id: blogId,
     author: userId,
   });
+
   if (!blog) {
-    throw new Error(`No blog with id ${blogId}`);
+    const existingBlog = await Blog.exists({ _id: blogId });
+    const error = existingBlog
+      ? new Error('You are not authorized to delete this blog')
+      : new Error(`No blog with id ${blogId}`);
+    error.statusCode = existingBlog ? StatusCodes.FORBIDDEN : StatusCodes.NOT_FOUND;
+    throw error;
   }
-  res.status(StatusCodes.OK).send();
+
+  res.status(StatusCodes.OK).json({ msg: 'Blog deleted successfully' });
 };
 
 module.exports = {
